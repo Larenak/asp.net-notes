@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PracticeWebApp.Models;
 public class NoteDb : DbContext
 {
     public NoteDb(DbContextOptions<NoteDb> options) : base(options)
@@ -23,7 +24,7 @@ public class NoteDb : DbContext
             entity.ToTable("users");
             entity.Property(user => user.Id).HasColumnName("id");
             entity.Property(user => user.Name).HasColumnName("name");
-            entity.Property(user => user.Password).HasColumnName("password");
+            entity.Property(user => user.PasswordHash).HasColumnName("password_hash");
         });
     }
     public DbSet<Note> Notes

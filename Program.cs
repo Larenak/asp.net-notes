@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using PracticeWebApp.Models;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<NoteDb>(options => options.UseNpgsql(
@@ -20,13 +22,39 @@ app.MapPost("/create", async (NoteDb db, CreateNote user_note) =>
     db.Add(note);
     await db.SaveChangesAsync();
 
-    return note;
+    return Results.Ok(note);
 });
 
 app.MapGet("/{user_id}/notes", async (int user_id, NoteDb db) =>
 {
-    var notes = await db.Notes.Where(note => note.UserId == user_id).ToListAsync();
+    List<Note> notes = await db.Notes.Where(note => note.UserId == user_id).ToListAsync();
     return Results.Ok(notes);
 });
+
+app.MapPost("/registration", async (NoteDb db, UserCreate create_user) =>
+{
+
+    if (string.IsNullOrWhiteSpace(create_user.Name))
+    {
+        return Results.BadRequest("Name is empty!");
+    }
+    if (string.IsNullOrWhiteSpace(create_user.Password))
+    {
+        return Results.BadRequest("Password is empty!");
+    }
+    var user = new User
+    {
+        Name = create_user.Name,
+    };
+
+    var hasher = new PasswordHasher<User>();
+    user.PasswordHash = hasher.HashPassword(user, create_user.Password);
+
+    db.Add(user);
+    await db.SaveChangesAsync();
+
+    return Results.Ok("User successfully created!");
+});
+
 app.Run();
 

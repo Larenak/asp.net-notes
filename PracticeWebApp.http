@@ -3,8 +3,6 @@
 POST {{host}}/create
 Content-Type: application/json
 
-{ "userId": 1, "header": "Покупки", "text": "Купить молоко" }
-
 ###
 
 GET {{host}}/1/notes

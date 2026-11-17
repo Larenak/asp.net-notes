@@ -1,3 +1,4 @@
+namespace PracticeWebApp.Models;
 
 public class Note
 {
