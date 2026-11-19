@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using PracticeWebApp.Models;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<NoteDb>(options => options.UseNpgsql(
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+builder.Services.AddDbContext<NoteDb>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
 
 
 WebApplication app = builder.Build();
@@ -54,6 +56,23 @@ app.MapPost("/registration", async (NoteDb db, UserCreate create_user) =>
     await db.SaveChangesAsync();
 
     return Results.Ok("User successfully created!");
+});
+
+app.MapPost("/login", async (NoteDb db, UserLogin login) =>
+{
+    var user = await db.Users.FirstOrDefaultAsync(u => u.Name == login.Name);
+    if (user == null)
+    {
+        return Results.Problem("Wrong username or password!", statusCode: 401);
+    }
+    var hashwer = new PasswordHasher<User>();
+
+    var result = hashwer.VerifyHashedPassword(user, user.PasswordHash, login.Password);
+    if (result == PasswordVerificationResult.Failed)
+    {
+        return Results.Unauthorized();
+    }
+    return Results.Ok("Successful login!");
 });
 
 app.Run();
